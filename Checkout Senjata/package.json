@@ -1,0 +1,8 @@
+{
+  "name": "warung-beepel",
+  "version": "1.0.0",
+  "description": "WARUNG BEEPEL E-Commerce Website",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  }
+}
