@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Checkout Senjata</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            background-image: 
+                linear-gradient(135deg, rgba(255, 0, 110, 0.15) 0%, transparent 50%),
+                linear-gradient(225deg, rgba(255, 45, 146, 0.1) 0%, transparent 50%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 0, 110, 0.03) 2px, rgba(255, 0, 110, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 0, 110, 0.03) 2px, rgba(255, 0, 110, 0.03) 4px);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 110, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 45, 146, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.4) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulseGlow 4s ease-in-out infinite;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .logo-left,
+        .logo-right {
+            position: fixed;
+            top: 20px;
+            max-width: 200px;
+            max-height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+            z-index: 1000;
+            animation: rotateVertical 3s ease-in-out infinite;
+        }
+
+        .logo-left {
+            left: 20px;
+        }
+
+        .logo-right {
+            right: 20px;
+        }
+
+        @keyframes rotateVertical {
+            0%, 100% {
+                transform: rotateY(0deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+        }
+
+        /* Hide logo jika tidak ada gambar */
+        .logo-left:not([src]),
+        .logo-right:not([src]),
+        .logo-left[src=""],
+        .logo-right[src=""] {
+            display: none;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .remember-me label {
+            color: #666;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .social-button {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .social-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .logo-left,
+            .logo-right {
+                max-width: 130px;
+                max-height: 65px;
+                top: 15px;
+            }
+
+            .logo-left {
+                left: 15px;
+            }
+
+            .logo-right {
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="logo-w-border.png" alt="Logo" class="logo-left" id="logoLeft">
+    <img src="logo-w-border.png" alt="Logo" class="logo-right" id="logoRight">
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Selamat Datang di Website BFL</h1>
+            <p>Masuk ke akun Anda untuk melanjutkan</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Masukkan username"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Masukkan password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <div class="remember-forgot">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Ingat saya</label>
+                </div>
+                <a href="#" class="forgot-password">Lupa password?</a>
+            </div>
+
+            <button type="submit" class="login-button">Masuk</button>
+        </form>
+
+        <div class="signup-link">
+            Belum punya akun? <a href="register.html">Daftar sekarang</a>
+        </div>
+    </div>
+
+    <script>
+        // Form submission
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+
+            // Basic validation
+            if (!username || !password) {
+                showError('Mohon lengkapi semua field');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password harus minimal 6 karakter');
+                return;
+            }
+
+            // Hide error message
+            errorMessage.classList.remove('show');
+
+            // Simulate login process
+            const loginButton = loginForm.querySelector('.login-button');
+            loginButton.textContent = 'Memproses...';
+            loginButton.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                // Here you would normally make an API call
+                console.log('Login attempt:', { username, password, remember });
+                
+                // Reset button
+                loginButton.textContent = 'Masuk';
+                loginButton.disabled = false;
+
+                // Get users from Firebase
+                getUsersFromFirebase(function(users) {
+                    // Initialize admin user if not exists or update if no password
+                    const adminUser = users.find(u => u.username.toLowerCase() === 'admin');
+                    if (!adminUser) {
+                        const newAdmin = {
+                            username: 'admin',
+                            password: 'admin123',
+                            role: 'admin',
+                            createdAt: new Date().toISOString()
+                        };
+                        users.push(newAdmin);
+                        saveUserToFirebase(newAdmin, function() {
+                            // Continue with login
+                            processLogin(users, username, password);
+                        });
+                        return;
+                    } else if (!adminUser.password || adminUser.password !== 'admin123') {
+                        // Update existing admin password
+                        adminUser.password = 'admin123';
+                        const adminIndex = users.findIndex(u => u.username.toLowerCase() === 'admin');
+                        users[adminIndex] = adminUser;
+                        saveUserToFirebase(adminUser, function() {
+                            // Continue with login
+                            processLogin(users, username, password);
+                        });
+                        return;
+                    }
+                    
+                    // Continue with login
+                    processLogin(users, username, password);
+                });
+                
+                function processLogin(users, username, password) {
+                    // Find user
+                    let user = users.find(u => u.username === username);
+                    
+                    // Check if user exists
+                    if (!user) {
+                        loginButton.textContent = 'Masuk';
+                        loginButton.disabled = false;
+                        showError('Username tidak terdaftar! Silakan daftar terlebih dahulu.');
+                        return;
+                    }
+                    
+                    // Check password (handle users without password - legacy support)
+                    if (!user.password) {
+                        // If user exists but no password, set default password for admin
+                        if (user.username.toLowerCase() === 'admin') {
+                            user.password = 'admin123';
+                            saveUserToFirebase(user, function() {
+                                checkPasswordAndLogin(user, password);
+                            });
+                        } else {
+                            loginButton.textContent = 'Masuk';
+                            loginButton.disabled = false;
+                            showError('Akun ini belum memiliki password. Silakan daftar ulang.');
+                        }
+                        return;
+                    }
+                    
+                    checkPasswordAndLogin(user, password);
+                }
+                
+                function checkPasswordAndLogin(user, password) {
+                    // Check password
+                    if (user.password !== password) {
+                        loginButton.textContent = 'Masuk';
+                        loginButton.disabled = false;
+                        showError('Password salah!');
+                        return;
+                    }
+                    
+                    // Set login status and role
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('username', user.username);
+                    localStorage.setItem('userRole', user.role);
+                    
+                    // Show success and redirect
+                    alert('Login berhasil!');
+                    if (user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'checkout.html';
+                    }
+                }
+            }, 1500);
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+    </script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+    
+    <!-- Firebase Config & Helper -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-helper.js"></script>
+    
+    <script>
+        // Initialize Firebase when page loads
+        if (typeof firebase !== 'undefined') {
+            try {
+                // Check if already initialized (from firebase-config.js)
+                if (!firebaseApp) {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                }
+                if (!firebaseDb) {
+                    firebaseDb = firebase.database(firebaseApp);
+                }
+                console.log('✅ Firebase initialized in login page');
+            } catch (error) {
+                console.error('Firebase init error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
