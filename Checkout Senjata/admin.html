@@ -926,13 +926,21 @@
 
         // Tab switching
         function showTab(tabName) {
+            console.log('showTab called with:', tabName);
+            
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
             const isKing = role === 'king';
+            const isPrince = role === 'prince';
+            
+            console.log('Current role:', role, 'isKing:', isKing, 'isPrince:', isPrince);
 
             // Hide all tabs
-            document.getElementById('transactionsTab').style.display = 'none';
-            document.getElementById('membersTab').style.display = 'none';
+            const transactionsTab = document.getElementById('transactionsTab');
+            const membersTab = document.getElementById('membersTab');
             const stockTab = document.getElementById('stockTab');
+            
+            if (transactionsTab) transactionsTab.style.display = 'none';
+            if (membersTab) membersTab.style.display = 'none';
             if (stockTab) stockTab.style.display = 'none';
             
             // Remove active class from all buttons
@@ -942,9 +950,11 @@
             
             // Show selected tab
             if (tabName === 'transactions') {
-                document.getElementById('transactionsTab').style.display = 'block';
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                loadTransactions();
+                if (transactionsTab) {
+                    transactionsTab.style.display = 'block';
+                    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                    loadTransactions();
+                }
             } else if (tabName === 'members') {
                 // PRINCE and KING can access members tab
                 if (!isKing && !isPrince) {
@@ -952,8 +962,18 @@
                     showTab('transactions');
                     return;
                 }
-                document.getElementById('membersTab').style.display = 'block';
-                document.getElementById('membersTabBtn').classList.add('active');
+                console.log('Showing members tab...');
+                if (membersTab) {
+                    membersTab.style.display = 'block';
+                    console.log('Members tab displayed');
+                } else {
+                    console.error('membersTab element not found!');
+                }
+                const membersBtn = document.getElementById('membersTabBtn');
+                if (membersBtn) {
+                    membersBtn.classList.add('active');
+                }
+                console.log('Calling loadMembers()...');
                 loadMembers();
             } else if (tabName === 'stock') {
                 if (!isKing) {
@@ -1183,7 +1203,13 @@
 
         // Load and display members
         function loadMembers() {
-            if (!checkAdminAccess()) return;
+            console.log('loadMembers() called');
+            
+            if (!checkAdminAccess()) {
+                console.log('checkAdminAccess() returned false');
+                return;
+            }
+            
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
             const isKing = role === 'king';
             const isPrince = role === 'prince';
@@ -1197,31 +1223,33 @@
             const membersList = document.getElementById('membersList');
             const memberStats = document.getElementById('memberStats');
             
+            console.log('membersList element:', membersList);
+            console.log('memberStats element:', memberStats);
+            
             if (!membersList) {
                 console.error('membersList element not found!');
+                alert('Error: Element membersList tidak ditemukan. Pastikan tab Kelola Member sudah di-load.');
                 return;
             }
             
             if (!memberStats) {
-                console.error('memberStats element not found!');
+                console.warn('memberStats element not found!');
             }
             
             // Show loading state
-            if (membersList) {
-                membersList.innerHTML = '<div style="color:#999;padding:20px;text-align:center;">Memuat data member...</div>';
-            }
+            membersList.innerHTML = '<div style="color:#999;padding:20px;text-align:center;">Memuat data member...</div>';
 
             // Check if getUsersFromFirebase is available
             if (typeof getUsersFromFirebase !== 'function') {
                 console.error('getUsersFromFirebase is not available!');
-                if (membersList) {
-                    membersList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: getUsersFromFirebase tidak tersedia. Pastikan supabase-helper.js ter-load.</div>';
-                }
+                membersList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: getUsersFromFirebase tidak tersedia. Pastikan supabase-helper.js ter-load.</div>';
                 return;
             }
 
+            console.log('Calling getUsersFromFirebase...');
             // Get users from Firebase (with localStorage fallback)
             getUsersFromFirebase(function(users) {
+                console.log('getUsersFromFirebase callback called with:', users);
                 console.log('Total users found:', users.length);
                 console.log('Users data:', users);
                 
