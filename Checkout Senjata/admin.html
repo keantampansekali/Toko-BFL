@@ -1035,6 +1035,8 @@
 
                 stockList.innerHTML = uniqueNames.map(name => {
                     const currentStock = stockMap[name] ?? 0;
+                    // Escape quotes in product name for onclick
+                    const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     return `
                         <div class="member-card" style="align-items:flex-start;">
                             <div class="member-info">
@@ -1042,8 +1044,8 @@
                                 <div class="member-role">Stok saat ini: <b>${currentStock}</b></div>
                             </div>
                             <div class="member-actions" style="gap:10px;align-items:center;">
-                                <input type="number" min="0" value="${currentStock}" id="stock-input-${name}" class="filter-input" style="width:140px;">
-                                <button class="btn-action btn-promote" onclick="saveStock('${name}')">Simpan</button>
+                                <input type="number" min="0" step="1" value="${currentStock}" id="stock-input-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}" class="filter-input" style="width:140px;" onkeypress="if(event.key==='Enter'){saveStock('${safeName}')}">
+                                <button class="btn-action btn-promote" onclick="saveStock('${safeName}')" id="save-btn-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}">Simpan</button>
                             </div>
                         </div>
                     `;
@@ -1053,15 +1055,60 @@
 
         function saveStock(productName) {
             if (typeof upsertInventoryItem !== 'function') {
-                alert('upsertInventoryItem tidak tersedia.');
+                alert('upsertInventoryItem tidak tersedia. Pastikan supabase-helper.js ter-load.');
                 return;
             }
-            const input = document.getElementById(`stock-input-${productName}`);
-            const stock = input ? Number(input.value) : 0;
+            
+            // Get input element (handle special characters in product name)
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) {
+                alert(`❌ Input field tidak ditemukan untuk "${productName}"`);
+                return;
+            }
+            
+            const stock = Number(input.value);
+            if (isNaN(stock) || stock < 0) {
+                alert(`❌ Stok harus berupa angka >= 0`);
+                input.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            const saveBtn = document.getElementById(`save-btn-${safeId}`);
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Menyimpan...';
+            }
+            
             upsertInventoryItem(productName, stock, function(saved) {
-                if (!saved) return;
-                alert(`✅ Stok "${productName}" disimpan: ${stock}`);
-                loadStock();
+                // Re-enable button
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Simpan';
+                }
+                
+                if (!saved) {
+                    alert(`❌ Gagal menyimpan stok "${productName}". Cek console untuk detail error.`);
+                    return;
+                }
+                
+                // Show success feedback
+                if (saveBtn) {
+                    const originalText = saveBtn.textContent;
+                    saveBtn.textContent = '✅ Tersimpan!';
+                    saveBtn.style.background = '#28a745';
+                    setTimeout(() => {
+                        saveBtn.textContent = originalText;
+                        saveBtn.style.background = '';
+                    }, 1500);
+                }
+                
+                // Update current stock display
+                const memberRole = input.closest('.member-card')?.querySelector('.member-role');
+                if (memberRole) {
+                    memberRole.innerHTML = `Stok saat ini: <b>${stock}</b>`;
+                }
             });
         }
 
