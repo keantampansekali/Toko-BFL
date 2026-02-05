@@ -1193,10 +1193,45 @@
                 return;
             }
 
+            // Check if elements exist
+            const membersList = document.getElementById('membersList');
+            const memberStats = document.getElementById('memberStats');
+            
+            if (!membersList) {
+                console.error('membersList element not found!');
+                return;
+            }
+            
+            if (!memberStats) {
+                console.error('memberStats element not found!');
+            }
+            
+            // Show loading state
+            if (membersList) {
+                membersList.innerHTML = '<div style="color:#999;padding:20px;text-align:center;">Memuat data member...</div>';
+            }
+
+            // Check if getUsersFromFirebase is available
+            if (typeof getUsersFromFirebase !== 'function') {
+                console.error('getUsersFromFirebase is not available!');
+                if (membersList) {
+                    membersList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: getUsersFromFirebase tidak tersedia. Pastikan supabase-helper.js ter-load.</div>';
+                }
+                return;
+            }
+
             // Get users from Firebase (with localStorage fallback)
             getUsersFromFirebase(function(users) {
                 console.log('Total users found:', users.length);
                 console.log('Users data:', users);
+                
+                if (!users || !Array.isArray(users)) {
+                    console.error('Invalid users data:', users);
+                    if (membersList) {
+                        membersList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: Data user tidak valid.</div>';
+                    }
+                    return;
+                }
                 
                 // Debug: Log each user's role
                 users.forEach(user => {
@@ -1221,31 +1256,30 @@
                     saveUserToFirebase(adminExists);
                 }
                 
-                const membersList = document.getElementById('membersList');
-                const memberStats = document.getElementById('memberStats');
                 const currentUser = localStorage.getItem('username');
 
-            // Calculate stats - with better filtering
-            const kingCount = users.filter(u => u.role && u.role.toLowerCase() === 'king').length;
-            const princeCount = users.filter(u => u.role && u.role.toLowerCase() === 'prince').length;
-            const memberCount = users.filter(u => {
-                // Count as member if role is 'member' or if role is null/undefined (default to member)
-                const role = u.role ? u.role.toLowerCase() : 'member';
-                return role === 'member';
-            }).length;
-            const totalUsers = users.length;
-            
-            // Debug logging
-            console.log('Users breakdown:', {
-                total: totalUsers,
-                kings: kingCount,
-                princes: princeCount,
-                members: memberCount,
-                users: users.map(u => ({ username: u.username, role: u.role }))
-            });
+                // Calculate stats - with better filtering
+                const kingCount = users.filter(u => u.role && u.role.toLowerCase() === 'king').length;
+                const princeCount = users.filter(u => u.role && u.role.toLowerCase() === 'prince').length;
+                const memberCount = users.filter(u => {
+                    // Count as member if role is 'member' or if role is null/undefined (default to member)
+                    const role = u.role ? u.role.toLowerCase() : 'member';
+                    return role === 'member';
+                }).length;
+                const totalUsers = users.length;
+                
+                // Debug logging
+                console.log('Users breakdown:', {
+                    total: totalUsers,
+                    kings: kingCount,
+                    princes: princeCount,
+                    members: memberCount,
+                    users: users.map(u => ({ username: u.username, role: u.role }))
+                });
 
-            // Display stats
-            memberStats.innerHTML = `
+                // Display stats
+                if (memberStats) {
+                    memberStats.innerHTML = `
                 <div class="stat-card">
                     <div class="stat-label">Total User</div>
                     <div class="stat-value">${totalUsers}</div>
@@ -1262,36 +1296,40 @@
                     <div class="stat-label">Member</div>
                     <div class="stat-value">${memberCount}</div>
                 </div>
-            `;
-
-            if (users.length === 0) {
-                membersList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <div class="empty-state-text">Belum ada member</div>
-                    </div>
-                `;
-                return;
-            }
-
-            // Ensure all users have role
-            users = users.map(user => {
-                if (!user.role) {
-                    user.role = 'member'; // Default to member
+                    `;
                 }
-                return user;
-            });
-            
-            // Sort users: king first, then prince, then member, then by username
-            users.sort((a, b) => {
-                const aRole = (a.role || 'member').toLowerCase();
-                const bRole = (b.role || 'member').toLowerCase();
-                const rank = (r) => (r === 'king' ? 0 : r === 'prince' ? 1 : 2);
-                if (rank(aRole) !== rank(bRole)) return rank(aRole) - rank(bRole);
-                return a.username.localeCompare(b.username);
-            });
 
-            membersList.innerHTML = users.map(user => {
+                if (users.length === 0) {
+                    if (membersList) {
+                        membersList.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">👥</div>
+                                <div class="empty-state-text">Belum ada member</div>
+                            </div>
+                        `;
+                    }
+                    return;
+                }
+
+                // Ensure all users have role
+                users = users.map(user => {
+                    if (!user.role) {
+                        user.role = 'member'; // Default to member
+                    }
+                    return user;
+                });
+                
+                // Sort users: king first, then prince, then member, then by username
+                users.sort((a, b) => {
+                    const aRole = (a.role || 'member').toLowerCase();
+                    const bRole = (b.role || 'member').toLowerCase();
+                    const rank = (r) => (r === 'king' ? 0 : r === 'prince' ? 1 : 2);
+                    if (rank(aRole) !== rank(bRole)) return rank(aRole) - rank(bRole);
+                    return a.username.localeCompare(b.username);
+                });
+
+                if (membersList) {
+                    membersList.innerHTML = users.map(user => {
                 const isCurrentUser = user.username === currentUser;
                 // Ensure role exists, default to 'member'
                 const userRole = (user.role || 'member').toLowerCase();
@@ -1333,21 +1371,24 @@
                     actionButtons = '<span style="color: #999; font-size: 14px;">(Anda)</span>';
                 }
 
-                return `
-                    <div class="member-card">
-                        <div class="member-info">
-                            <div class="member-name">
-                                ${user.username}
-                                ${roleBadge}
+                        return `
+                            <div class="member-card">
+                                <div class="member-info">
+                                    <div class="member-name">
+                                        ${user.username}
+                                        ${roleBadge}
+                                    </div>
+                                    <div class="member-role">Terdaftar: ${formattedDate}</div>
+                                </div>
+                                <div class="member-actions">
+                                    ${actionButtons}
+                                </div>
                             </div>
-                            <div class="member-role">Terdaftar: ${formattedDate}</div>
-                        </div>
-                        <div class="member-actions">
-                            ${actionButtons}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                        `;
+                    }).join('');
+                } else {
+                    console.error('membersList element not found when trying to render users!');
+                }
             }); // Close getUsersFromFirebase callback
         }
 
