@@ -679,9 +679,6 @@
                 filterDateInput.value = todayStr;
             }
         });
-
-        // Initialize
-        loadTransactions();
     </script>
 
     <!-- Supabase JS Library -->
@@ -710,17 +707,64 @@
         }
     </script>
     <!-- Supabase Helper -->
-    <script src="supabase-helper.js"></script>
+    <script src="supabase-helper.js" onload="initMyTransactions()" onerror="console.error('Failed to load supabase-helper.js')"></script>
     <script>
+        // Wait for Supabase to be ready before loading transactions
+        function initMyTransactions() {
+            console.log('My Transactions: Initializing Supabase...');
+            
+            // Wait a bit for scripts to fully load
+            setTimeout(function() {
+                // Initialize Supabase
+                if (typeof initSupabase === 'function') {
+                    const initialized = initSupabase();
+                    if (!initialized) {
+                        console.error('My Transactions: Failed to initialize Supabase');
+                    }
+                }
+                
+                // Wait a bit more to ensure getCheckoutsFromFirebase is available
+                setTimeout(function() {
+                    if (typeof getCheckoutsFromFirebase === 'function') {
+                        console.log('✅ getCheckoutsFromFirebase is available, loading transactions...');
+                        loadTransactions();
+                    } else {
+                        console.error('❌ getCheckoutsFromFirebase still not available after waiting');
+                        const transactionsList = document.getElementById('transactionsList');
+                        if (transactionsList) {
+                            transactionsList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: getCheckoutsFromFirebase tidak tersedia. Silakan refresh halaman (F5).</div>';
+                        }
+                    }
+                }, 300);
+            }, 200);
+        }
+        
         // Initialize Supabase when page loads
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('My Transactions: Initializing Supabase...');
-            setTimeout(function() {
-                const initialized = initSupabase();
-                if (!initialized) {
-                    console.error('My Transactions: Failed to initialize Supabase');
-                }
-            }, 100);
+            // If script already loaded, call initMyTransactions
+            if (typeof getCheckoutsFromFirebase === 'function') {
+                initMyTransactions();
+            } else {
+                // Wait for script to load
+                const checkInterval = setInterval(function() {
+                    if (typeof getCheckoutsFromFirebase === 'function') {
+                        clearInterval(checkInterval);
+                        initMyTransactions();
+                    }
+                }, 100);
+                
+                // Timeout after 5 seconds
+                setTimeout(function() {
+                    clearInterval(checkInterval);
+                    if (typeof getCheckoutsFromFirebase !== 'function') {
+                        console.error('Timeout waiting for getCheckoutsFromFirebase');
+                        const transactionsList = document.getElementById('transactionsList');
+                        if (transactionsList) {
+                            transactionsList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: Gagal memuat supabase-helper.js. Silakan refresh halaman (F5).</div>';
+                        }
+                    }
+                }, 5000);
+            }
         });
         
         // Fallback initialization
@@ -729,7 +773,10 @@
                 if (typeof initSupabase === 'function') {
                     initSupabase();
                 }
-            }, 200);
+                if (typeof getCheckoutsFromFirebase === 'function' && typeof loadTransactions === 'function') {
+                    loadTransactions();
+                }
+            }, 500);
         }
     </script>
 </body>
