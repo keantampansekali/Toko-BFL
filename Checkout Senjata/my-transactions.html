@@ -439,11 +439,8 @@
                 return false;
             }
 
-            // Redirect KING/PRINCE to admin page
-            if (userRole === 'king' || userRole === 'prince') {
-                window.location.href = 'admin.html';
-                return false;
-            }
+            // Note: KING/PRINCE can view their own transactions here
+            // They can also access admin.html to see all transactions
             
             return true;
         }
