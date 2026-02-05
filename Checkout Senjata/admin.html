@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - WARUNG BEEPEL</title>
+    
+    <!-- API Helper - No Firebase needed -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            background-image: 
+                linear-gradient(135deg, rgba(255, 0, 110, 0.15) 0%, transparent 50%),
+                linear-gradient(225deg, rgba(255, 45, 146, 0.1) 0%, transparent 50%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 0, 110, 0.03) 2px, rgba(255, 0, 110, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 0, 110, 0.03) 2px, rgba(255, 0, 110, 0.03) 4px);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 110, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 45, 146, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.4) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulseGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 15px 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 3px solid #000000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 0, 110, 0.3), 0 0 15px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 60px;
+        }
+
+        .nav-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000000;
+            text-decoration: none;
+            margin-left: -50px;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+            align-items: center;
+            margin-right: -20px;
+        }
+
+        .nav-link {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 80px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 3px solid #000000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 0, 110, 0.2), 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: #4a4a4a;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 25px;
+            border: 3px solid #000000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 0 25px rgba(255, 0, 110, 0.15), 0 0 15px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff006e, #ff2d92, #ff6bb5);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff006e;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 0, 110, 0.7), 0 0 30px rgba(255, 0, 110, 0.5), 0 0 25px rgba(0, 0, 0, 1), inset 0 0 25px rgba(0, 0, 0, 0.15), inset 0 0 20px rgba(255, 0, 110, 0.2);
+            animation: none;
+        }
+
+        .stat-label {
+            color: #4a4a4a;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            color: #ff006e;
+            font-size: 32px;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(255, 0, 110, 0.3);
+        }
+
+        .transactions {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            border: 3px solid #000000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 0, 110, 0.2), 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .transactions-header h2 {
+            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 10px 15px;
+            border: 3px solid #000000;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-input:focus {
+            border-color: #000000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .transaction-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .transaction-card:hover {
+            border-color: #000000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .transaction-id {
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .transaction-date {
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .transaction-user {
+            color: #1a1a1a;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .transaction-items {
+            margin-bottom: 15px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 0, 110, 0.2);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .item-qty {
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .item-price {
+            color: #ff006e;
+            font-weight: 700;
+        }
+
+        .transaction-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 2px solid #ff006e;
+            margin-top: 10px;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+
+        .total-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ff006e;
+            text-shadow: 0 0 10px rgba(255, 0, 110, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+        }
+
+        .btn-logout {
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-logout:hover {
+            background: #ff006e;
+            border-color: #ff006e;
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000000;
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            color: #4a4a4a;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-btn:hover {
+            border-color: #000000;
+            color: #ff006e;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);
+            color: white;
+            border-color: #000000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.15), inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(255, 0, 110, 0.6);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .member-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .member-card:hover {
+            border-color: #000000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            color: #1a1a1a;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .member-role {
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .role-badge.king {
+            background: linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 0, 110, 0.5);
+        }
+
+        .role-badge.prince {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .role-badge.member {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-promote {
+            background: linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
+        }
+
+        .btn-promote:hover {
+            box-shadow: 0 0 25px rgba(255, 0, 110, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .btn-demote {
+            background: #1a1a1a;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-demote:hover {
+            background: #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: #1a1a1a;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: #ff006e;
+            box-shadow: 0 0 25px rgba(255, 0, 110, 0.7);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 0 20px;
+            }
+
+            .transaction-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="home.html" class="nav-brand">WARUNG BEEPEL - Admin</a>
+            <ul class="nav-menu">
+                <li>
+                    <a href="checkout.html" class="nav-link">Checkout</a>
+                </li>
+                <li>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Dashboard Admin</h1>
+            <p id="adminWelcome">Selamat datang! Berikut adalah semua transaksi checkout dari member.</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('transactions')">Daftar Transaksi</button>
+            <button class="tab-btn" onclick="showTab('members')" id="membersTabBtn">Kelola Member</button>
+            <button class="tab-btn" onclick="showTab('stock')" id="stockTabBtn">Kelola Stok</button>
+        </div>
+
+        <div id="transactionsTab" class="tab-content">
+            <div class="stats" id="stats"></div>
+
+            <div class="transactions">
+                <div class="transactions-header">
+                    <h2>Daftar Transaksi</h2>
+                    <div class="filter-section">
+                        <label style="color: #1a1a1a; font-size: 14px; margin-right: 10px; font-weight: 600;">Filter Tanggal:</label>
+                        <input type="date" id="filterDate" class="filter-input" onchange="filterTransactions()">
+                        <script>
+                            // Set default date to today
+                            (function() {
+                                const today = new Date();
+                                const year = today.getFullYear();
+                                const month = String(today.getMonth() + 1).padStart(2, '0');
+                                const day = String(today.getDate()).padStart(2, '0');
+                                const todayStr = `${year}-${month}-${day}`;
+                                const filterDateInput = document.getElementById('filterDate');
+                                if (filterDateInput) {
+                                    filterDateInput.value = todayStr;
+                                }
+                            })();
+                        </script>
+                    </div>
+                </div>
+                <div id="transactionsList"></div>
+            </div>
+        </div>
+
+        <div id="membersTab" class="tab-content" style="display: none;">
+            <div class="stats" id="memberStats"></div>
+            <div class="transactions">
+                <div class="transactions-header">
+                    <h2>Daftar Member</h2>
+                </div>
+                <div id="membersList"></div>
+            </div>
+        </div>
+
+        <div id="stockTab" class="tab-content" style="display: none;">
+            <div class="transactions">
+                <div class="transactions-header">
+                    <h2>Kelola Stok</h2>
+                </div>
+                <div id="stockList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Roles:
+        // - king: full admin access (transactions + members + stock)
+        // - prince: can access admin page but ONLY transactions
+        // - member: normal user
+        function checkAdminAccess() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!isLoggedIn || (userRole !== 'king' && userRole !== 'prince')) {
+                alert('Akses ditolak! Hanya KING/PRINCE yang dapat mengakses halaman ini.');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        function setupRoleUi() {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            const username = localStorage.getItem('username') || '';
+            const isKing = role === 'king';
+            const isPrince = role === 'prince';
+
+            const welcome = document.getElementById('adminWelcome');
+            if (welcome) {
+                const roleLabel = isKing ? 'KING' : (isPrince ? 'PRINCE' : role.toUpperCase());
+                welcome.textContent = `Selamat datang, ${username}! Role: ${roleLabel}. Berikut adalah semua transaksi checkout dari member.`;
+            }
+
+            // Hide member/stock tabs for PRINCE
+            const membersBtn = document.getElementById('membersTabBtn');
+            const stockBtn = document.getElementById('stockTabBtn');
+            if (!isKing) {
+                if (membersBtn) membersBtn.style.display = 'none';
+                if (stockBtn) stockBtn.style.display = 'none';
+            }
+        }
+
+        // Format currency (USD-style display: $7,000)
+        function formatCurrency(amount) {
+            const num = Number(amount) || 0;
+            return '$' + num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) {
+                console.log('No date string provided');
+                return 'Tidak diketahui';
+            }
+            
+            try {
+                // Handle different date formats from Supabase
+                let date;
+                
+                // If it's already a Date object
+                if (dateString instanceof Date) {
+                    date = dateString;
+                } 
+                // If it's a string, parse it
+                else {
+                    date = new Date(dateString);
+                }
+                
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    console.log('Invalid date:', dateString);
+                    return 'Tidak diketahui';
+                }
+                
+                // Format to Indonesian date
+                return date.toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                console.error('Error formatting date:', error, dateString);
+                return 'Tidak diketahui';
+            }
+        }
+
+        // Format date-time helper (for prepared_at)
+        function formatDateTime(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                return date.toLocaleString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // Filter transactions by date
+        let filteredCheckouts = [];
+
+        function filterTransactions() {
+            const filterDate = document.getElementById('filterDate').value;
+            
+            // Get checkouts from Firebase
+            getCheckoutsFromFirebase(function(allCheckouts) {
+                if (!filterDate) {
+                    // No filter, show all
+                    filteredCheckouts = allCheckouts;
+                } else {
+                    // Filter by selected date
+                    const selectedDate = new Date(filterDate);
+                    selectedDate.setHours(0, 0, 0, 0);
+                    
+                    filteredCheckouts = allCheckouts.filter(checkout => {
+                        // Parse date from checkout.date (format: "DD/MM/YYYY, HH.mm.ss")
+                        const dateStr = checkout.date.split(',')[0]; // Get "DD/MM/YYYY"
+                        const [day, month, year] = dateStr.split('/');
+                        const checkoutDate = new Date(year, month - 1, day);
+                        checkoutDate.setHours(0, 0, 0, 0);
+                        
+                        // Compare dates (ignore time)
+                        return checkoutDate.getTime() === selectedDate.getTime();
+                    });
+                }
+                
+                displayTransactions(filteredCheckouts);
+                updateStats(filteredCheckouts);
+            });
+        }
+
+        function updateStats(checkouts) {
+            const statsContainer = document.getElementById('stats');
+            
+            const totalTransactions = checkouts.length;
+            // Total pendapatan hanya dihitung dari transaksi yang sudah dipersiapkan
+            const totalRevenue = checkouts
+                .filter(checkout => !!checkout.prepared)
+                .reduce((sum, checkout) => sum + checkout.total, 0);
+            const totalItems = checkouts.reduce((sum, checkout) => {
+                return sum + checkout.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            }, 0);
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Total Transaksi</div>
+                    <div class="stat-value">${totalTransactions}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Pendapatan (Sudah Dipersiapkan)</div>
+                    <div class="stat-value">${formatCurrency(totalRevenue)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Item Terjual</div>
+                    <div class="stat-value">${totalItems}</div>
+                </div>
+            `;
+        }
+
+        function displayTransactions(checkouts) {
+            const transactionsList = document.getElementById('transactionsList');
+
+            if (checkouts.length === 0) {
+                transactionsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <div class="empty-state-text">Tidak ada transaksi ditemukan</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            checkouts.sort((a, b) => b.id - a.id);
+
+            transactionsList.innerHTML = checkouts.map(checkout => {
+                const itemsHtml = checkout.items.map(item => `
+                    <div class="transaction-item">
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-qty">Jumlah: ${item.quantity}</div>
+                        </div>
+                        <div class="item-price">${formatCurrency(item.total)}</div>
+                    </div>
+                `).join('');
+
+                const prepared = !!checkout.prepared;
+                const preparedBadge = prepared
+                    ? '<span style="display:inline-block;margin-left:10px;padding:4px 10px;border-radius:999px;background:#1a1a1a;color:#fff;font-size:12px;font-weight:700;">SUDAH DIPERSIAPKAN</span>'
+                    : '<span style="display:inline-block;margin-left:10px;padding:4px 10px;border-radius:999px;background:#ff006e;color:#fff;font-size:12px;font-weight:700;">BELUM DIPERSIAPKAN</span>';
+
+                const preparedInfo = prepared
+                    ? `<div style="margin-top:6px;color:#4a4a4a;font-size:13px;font-weight:600;">Disiapkan oleh: ${checkout.prepared_by || '-'}${checkout.prepared_at ? ` • ${formatDateTime(checkout.prepared_at)}` : ''}</div>`
+                    : '';
+
+                const currentAdmin = (localStorage.getItem('username') || '').trim();
+                const canCancel = prepared && checkout.prepared_by && currentAdmin && checkout.prepared_by === currentAdmin;
+                const cancelTitle = canCancel
+                    ? 'Batalkan status siap'
+                    : `Hanya admin yang menyiapkan (${checkout.prepared_by || '-'}) yang bisa membatalkan`;
+
+                const toggleBtn = prepared
+                    ? `<button class="btn-action btn-demote" style="margin-top:10px;${canCancel ? '' : 'opacity:.5;cursor:not-allowed;'}" title="${cancelTitle}" ${canCancel ? `onclick="togglePrepared(${checkout.id}, false)"` : ''}>Batalkan</button>`
+                    : `<button class="btn-action btn-promote" style="margin-top:10px" onclick="togglePrepared(${checkout.id}, true)">Tandai Siap</button>`;
+
+                return `
+                    <div class="transaction-card">
+                        <div class="transaction-header">
+                            <div class="transaction-id">ID: #${checkout.id}</div>
+                            <div class="transaction-date">${checkout.date}</div>
+                        </div>
+                        <div class="transaction-user">Member: ${checkout.username} ${preparedBadge}</div>
+                        ${preparedInfo}
+                        <div class="transaction-items">
+                            ${itemsHtml}
+                        </div>
+                        <div class="transaction-total">
+                            <span class="total-label">Total:</span>
+                            <span class="total-value">${formatCurrency(checkout.total)}</span>
+                        </div>
+                        <div style="display:flex;justify-content:flex-end;">
+                            ${toggleBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle prepared status (Supabase)
+        function togglePrepared(checkoutId, prepared) {
+            if (typeof updateCheckoutPrepared !== 'function') {
+                alert('updateCheckoutPrepared tidak tersedia.');
+                return;
+            }
+
+            const adminUsername = localStorage.getItem('username') || 'admin';
+            updateCheckoutPrepared(checkoutId, prepared, adminUsername, function(updated) {
+                if (!updated) {
+                    alert('❌ Gagal mengubah status. Pastikan kolom `prepared` sudah ditambahkan (jalankan ulang supabase-setup.sql).');
+                    return;
+                }
+                // Refresh list (realtime should also update, but this makes it instant)
+                loadTransactions();
+            });
+        }
+
+        // Load and display transactions
+        function loadTransactions() {
+            if (!checkAdminAccess()) return;
+
+            // Set default date to today
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            const filterDateInput = document.getElementById('filterDate');
+            if (filterDateInput) {
+                filterDateInput.value = todayStr;
+            }
+
+            // Get checkouts from Firebase (with localStorage fallback)
+            getCheckoutsFromFirebase(function(checkouts) {
+                console.log('Total checkouts found:', checkouts.length);
+                console.log('Checkouts data:', checkouts);
+                filteredCheckouts = checkouts;
+                
+                // Auto-filter by today's date
+                if (filterDateInput && filterDateInput.value) {
+                    filterTransactions();
+                } else {
+                    updateStats(checkouts);
+                    displayTransactions(checkouts);
+                }
+            });
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            const isKing = role === 'king';
+
+            // Hide all tabs
+            document.getElementById('transactionsTab').style.display = 'none';
+            document.getElementById('membersTab').style.display = 'none';
+            const stockTab = document.getElementById('stockTab');
+            if (stockTab) stockTab.style.display = 'none';
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            if (tabName === 'transactions') {
+                document.getElementById('transactionsTab').style.display = 'block';
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                loadTransactions();
+            } else if (tabName === 'members') {
+                if (!isKing) {
+                    alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Member.');
+                    showTab('transactions');
+                    return;
+                }
+                document.getElementById('membersTab').style.display = 'block';
+                document.getElementById('membersTabBtn').classList.add('active');
+                loadMembers();
+            } else if (tabName === 'stock') {
+                if (!isKing) {
+                    alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Stok.');
+                    showTab('transactions');
+                    return;
+                }
+                if (stockTab) stockTab.style.display = 'block';
+                document.getElementById('stockTabBtn').classList.add('active');
+                loadStock();
+            }
+        }
+
+        // Load and display stock list
+        function loadStock() {
+            if (!checkAdminAccess()) return;
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Stok.');
+                return;
+            }
+            if (typeof getInventory !== 'function') {
+                document.getElementById('stockList').innerHTML = '<div style="color:#999;padding:20px;">Fitur stok belum siap. Pastikan supabase-helper.js terbaru ter-load.</div>';
+                return;
+            }
+
+            getInventory(function(rows) {
+                const stockList = document.getElementById('stockList');
+                if (!rows || rows.length === 0) {
+                    stockList.innerHTML = '<div style="color:#999;padding:20px;">Belum ada data stok. Silakan isi stok produk di bawah.</div>';
+                }
+
+                // Build list based on product catalog (same as checkout.html)
+                const PRODUCT_CATALOG = [
+                    // WEAPONS
+                    'PISTOL KACANG',
+                    'PISTOL P.50',
+                    'TEC-9',
+                    'PISTOL CERAMIC',
+                    'MINI SMG',
+                    'X17',
+                    'MICRO SMG',
+                    'SMG LARAS',
+                    'NAVY REVOLVER',
+                    'SHOTGUN',
+                    'KVR',
+                    'BLACK REVOLVER',
+                    'ASSSAULT RIFLE',
+                    // AMMO
+                    'AMMO .50',
+                    'AMMO 9MM',
+                    'AMMO .44',
+                    'AMMO .45',
+                    'AMMO RIFLE',
+                    'AMMO SHOTGUN',
+                    // VEST
+                    'VEST MERAH',
+                    'VEST BIRU',
+                    // DRUGS
+                    'WEED BAG',
+                    'METH BAG',
+                    'COCCAINE',
+                    // ATTACHMENTS
+                    'TACTICAL FLASHLIGHT',
+                    'GRIP',
+                    'EXT. PISTOL CLIP',
+                    'MACRO SCOPE',
+                    'MEDIUM SCOPE',
+                    'EXT. SMG CLIP',
+                    'SUPPRESOR',
+                    'TACTICAL SUPPRESOR',
+                    'SMG DRUM',
+                    'EXT. RIFLE CLIP',
+                    'RIFLE DRUM'
+                ];
+                const uniqueNames = PRODUCT_CATALOG;
+
+                const stockMap = {};
+                (rows || []).forEach(r => { stockMap[r.product_name] = Number(r.stock) || 0; });
+
+                stockList.innerHTML = uniqueNames.map(name => {
+                    const currentStock = stockMap[name] ?? 0;
+                    // Escape quotes in product name for onclick
+                    const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    return `
+                        <div class="member-card" style="align-items:flex-start;">
+                            <div class="member-info">
+                                <div class="member-name">${name}</div>
+                                <div class="member-role">Stok saat ini: <b>${currentStock}</b></div>
+                            </div>
+                            <div class="member-actions" style="gap:10px;align-items:center;">
+                                <div style="display:flex;align-items:center;gap:5px;">
+                                    <button class="quantity-btn" onclick="decreaseStock('${safeName}')" style="width:35px;height:35px;border-radius:8px;border:2px solid #1a1a1a;background:#fff;color:#1a1a1a;font-size:18px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;">-</button>
+                                    <input type="number" min="0" step="1" value="${currentStock}" id="stock-input-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}" class="filter-input" style="width:100px;text-align:center;" onkeypress="if(event.key==='Enter'){saveStock('${safeName}')}">
+                                    <button class="quantity-btn" onclick="increaseStock('${safeName}')" style="width:35px;height:35px;border-radius:8px;border:2px solid #1a1a1a;background:#fff;color:#1a1a1a;font-size:18px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+                                </div>
+                                <button class="btn-action btn-promote" onclick="saveStock('${safeName}')" id="save-btn-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}">Simpan</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
+
+        // Increase stock by 1
+        function increaseStock(productName) {
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) return;
+            
+            const currentValue = Number(input.value) || 0;
+            input.value = currentValue + 1;
+            
+            // Auto-save after increase
+            saveStock(productName);
+        }
+
+        // Decrease stock by 1 (minimum 0)
+        function decreaseStock(productName) {
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) return;
+            
+            const currentValue = Number(input.value) || 0;
+            if (currentValue > 0) {
+                input.value = currentValue - 1;
+                // Auto-save after decrease
+                saveStock(productName);
+            }
+        }
+
+        function saveStock(productName) {
+            if (typeof upsertInventoryItem !== 'function') {
+                alert('upsertInventoryItem tidak tersedia. Pastikan supabase-helper.js ter-load.');
+                return;
+            }
+            
+            // Get input element (handle special characters in product name)
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) {
+                alert(`❌ Input field tidak ditemukan untuk "${productName}"`);
+                return;
+            }
+            
+            const stock = Number(input.value);
+            if (isNaN(stock) || stock < 0) {
+                alert(`❌ Stok harus berupa angka >= 0`);
+                input.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            const saveBtn = document.getElementById(`save-btn-${safeId}`);
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Menyimpan...';
+            }
+            
+            upsertInventoryItem(productName, stock, function(saved) {
+                // Re-enable button
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Simpan';
+                }
+                
+                if (!saved) {
+                    alert(`❌ Gagal menyimpan stok "${productName}". Cek console untuk detail error.`);
+                    return;
+                }
+                
+                // Show success feedback
+                if (saveBtn) {
+                    const originalText = saveBtn.textContent;
+                    saveBtn.textContent = '✅ Tersimpan!';
+                    saveBtn.style.background = '#28a745';
+                    setTimeout(() => {
+                        saveBtn.textContent = originalText;
+                        saveBtn.style.background = '';
+                    }, 1500);
+                }
+                
+                // Update current stock display
+                const memberRole = input.closest('.member-card')?.querySelector('.member-role');
+                if (memberRole) {
+                    memberRole.innerHTML = `Stok saat ini: <b>${stock}</b>`;
+                }
+            });
+        }
+
+        // Get or create users storage (using Firebase)
+        function getUsers() {
+            // This is synchronous for backward compatibility
+            // But we'll use async version in loadMembers
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            // Initialize KING user if not exists or update password if missing
+            const adminExists = users.find(u => u.username.toLowerCase() === 'admin');
+            if (!adminExists) {
+                const newAdmin = {
+                    username: 'admin',
+                    password: 'admin123', // Default admin password
+                    role: 'king',
+                    createdAt: new Date().toISOString()
+                };
+                users.push(newAdmin);
+                saveUserToFirebase(newAdmin, function() {
+                    localStorage.setItem('users', JSON.stringify(users));
+                });
+            } else if (!adminExists.password || adminExists.password !== 'admin123') {
+                // Update existing admin password to default
+                adminExists.password = 'admin123';
+                const adminIndex = users.findIndex(u => u.username.toLowerCase() === 'admin');
+                users[adminIndex] = adminExists;
+                saveUserToFirebase(adminExists, function() {
+                    localStorage.setItem('users', JSON.stringify(users));
+                });
+            }
+            
+            return users;
+        }
+
+        // Save users
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Load and display members
+        function loadMembers() {
+            if (!checkAdminAccess()) return;
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Member.');
+                return;
+            }
+
+            // Get users from Firebase (with localStorage fallback)
+            getUsersFromFirebase(function(users) {
+                console.log('Total users found:', users.length);
+                console.log('Users data:', users);
+                
+                // Debug: Log each user's role
+                users.forEach(user => {
+                    console.log(`User: ${user.username}, Role: ${user.role || 'NULL/MISSING'}`);
+                });
+                
+                // Ensure admin user exists
+                const adminExists = users.find(u => u.username.toLowerCase() === 'admin');
+                if (!adminExists) {
+                    const newAdmin = {
+                        username: 'admin',
+                        password: 'admin123',
+                        role: 'king'
+                        // created_at will be auto-generated by Supabase
+                    };
+                    users.push(newAdmin);
+                    saveUserToFirebase(newAdmin);
+                } else if (!adminExists.password || adminExists.password !== 'admin123') {
+                    adminExists.password = 'admin123';
+                    const adminIndex = users.findIndex(u => u.username.toLowerCase() === 'admin');
+                    users[adminIndex] = adminExists;
+                    saveUserToFirebase(adminExists);
+                }
+                
+                const membersList = document.getElementById('membersList');
+                const memberStats = document.getElementById('memberStats');
+                const currentUser = localStorage.getItem('username');
+
+            // Calculate stats - with better filtering
+            const kingCount = users.filter(u => u.role && u.role.toLowerCase() === 'king').length;
+            const princeCount = users.filter(u => u.role && u.role.toLowerCase() === 'prince').length;
+            const memberCount = users.filter(u => {
+                // Count as member if role is 'member' or if role is null/undefined (default to member)
+                const role = u.role ? u.role.toLowerCase() : 'member';
+                return role === 'member';
+            }).length;
+            const totalUsers = users.length;
+            
+            // Debug logging
+            console.log('Users breakdown:', {
+                total: totalUsers,
+                kings: kingCount,
+                princes: princeCount,
+                members: memberCount,
+                users: users.map(u => ({ username: u.username, role: u.role }))
+            });
+
+            // Display stats
+            memberStats.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Total User</div>
+                    <div class="stat-value">${totalUsers}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">KING</div>
+                    <div class="stat-value">${kingCount}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">PRINCE</div>
+                    <div class="stat-value">${princeCount}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Member</div>
+                    <div class="stat-value">${memberCount}</div>
+                </div>
+            `;
+
+            if (users.length === 0) {
+                membersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-text">Belum ada member</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ensure all users have role
+            users = users.map(user => {
+                if (!user.role) {
+                    user.role = 'member'; // Default to member
+                }
+                return user;
+            });
+            
+            // Sort users: king first, then prince, then member, then by username
+            users.sort((a, b) => {
+                const aRole = (a.role || 'member').toLowerCase();
+                const bRole = (b.role || 'member').toLowerCase();
+                const rank = (r) => (r === 'king' ? 0 : r === 'prince' ? 1 : 2);
+                if (rank(aRole) !== rank(bRole)) return rank(aRole) - rank(bRole);
+                return a.username.localeCompare(b.username);
+            });
+
+            membersList.innerHTML = users.map(user => {
+                const isCurrentUser = user.username === currentUser;
+                // Ensure role exists, default to 'member'
+                const userRole = (user.role || 'member').toLowerCase();
+                const roleBadge = userRole === 'king'
+                    ? '<span class="role-badge king">KING</span>'
+                    : (userRole === 'prince'
+                        ? '<span class="role-badge prince">PRINCE</span>'
+                        : '<span class="role-badge member">MEMBER</span>');
+                
+                // Get date - Supabase uses created_at, fallback to createdAt
+                const userDate = user.created_at || user.createdAt;
+                const formattedDate = formatDate(userDate);
+                
+                let actionButtons = '';
+                const currentRole = (localStorage.getItem('userRole') || '').toLowerCase();
+                const isKing = currentRole === 'king';
+                
+                if (!isCurrentUser && user.username.toLowerCase() !== 'admin') {
+                    if (userRole === 'member') {
+                        actionButtons = `
+                            ${isKing ? `<button class="btn-action btn-promote" onclick="promoteToKing('${user.username}')" style="background: #ff006e; color: #fff;">Jadikan King</button>` : ''}
+                            ${isKing ? `<button class="btn-action btn-promote" onclick="promoteToPrince('${user.username}')">Jadikan Prince</button>` : ''}
+                            ${isKing ? `<button class="btn-action btn-delete" onclick="deleteUser('${user.username}')">Hapus</button>` : ''}
+                        `;
+                    } else if (userRole === 'prince') {
+                        actionButtons = `
+                            ${isKing ? `<button class="btn-action btn-promote" onclick="promoteToKing('${user.username}')" style="background: #ff006e; color: #fff;">Jadikan King</button>` : ''}
+                            ${isKing ? `<button class="btn-action btn-demote" onclick="demoteToMember('${user.username}')">Jadikan Member</button>` : ''}
+                            ${isKing ? `<button class="btn-action btn-delete" onclick="deleteUser('${user.username}')">Hapus</button>` : ''}
+                        `;
+                    } else if (userRole === 'king') {
+                        // King can only be demoted by another king (but usually not recommended)
+                        actionButtons = `
+                            ${isKing ? `<button class="btn-action btn-demote" onclick="demoteToMember('${user.username}')">Jadikan Member</button>` : ''}
+                            ${isKing ? `<button class="btn-action btn-delete" onclick="deleteUser('${user.username}')">Hapus</button>` : ''}
+                        `;
+                    }
+                } else {
+                    actionButtons = '<span style="color: #999; font-size: 14px;">(Anda)</span>';
+                }
+
+                return `
+                    <div class="member-card">
+                        <div class="member-info">
+                            <div class="member-name">
+                                ${user.username}
+                                ${roleBadge}
+                            </div>
+                            <div class="member-role">Terdaftar: ${formattedDate}</div>
+                        </div>
+                        <div class="member-actions">
+                            ${actionButtons}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            }); // Close getUsersFromFirebase callback
+        }
+
+        // Promote member to prince (KING only)
+        function promoteToPrince(username) {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat menjadikan PRINCE.');
+                return;
+            }
+
+            if (confirm(`Apakah Anda yakin ingin menjadikan "${username}" sebagai PRINCE?`)) {
+                getUsersFromFirebase(function(users) {
+                    const userIndex = users.findIndex(u => u.username === username);
+                    
+                    if (userIndex !== -1) {
+                        users[userIndex].role = 'prince';
+                        saveUserToFirebase(users[userIndex], function(savedUser) {
+                            if (!savedUser) {
+                                alert('❌ Gagal menjadikan PRINCE. Kemungkinan RLS policy Supabase masih menolak UPDATE.\n\nSolusi: jalankan ulang `supabase-setup.sql` yang terbaru, lalu coba lagi.');
+                                return;
+                            }
+                            // Update localStorage if user is currently logged in
+                            const currentUsername = localStorage.getItem('username');
+                            if (currentUsername === username) {
+                                localStorage.setItem('userRole', 'prince');
+                            }
+                            
+                            alert(`"${username}" sekarang adalah PRINCE!`);
+                            loadMembers();
+                        });
+                    }
+                });
+            }
+        }
+
+        // Promote user to king (KING only)
+        function promoteToKing(username) {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat menjadikan KING.');
+                return;
+            }
+
+            if (confirm(`Apakah Anda yakin ingin menjadikan "${username}" sebagai KING?\n\n⚠️ PERINGATAN: KING memiliki akses penuh ke semua fitur admin!`)) {
+                getUsersFromFirebase(function(users) {
+                    const userIndex = users.findIndex(u => u.username === username);
+                    
+                    if (userIndex !== -1) {
+                        users[userIndex].role = 'king';
+                        saveUserToFirebase(users[userIndex], function(savedUser) {
+                            if (!savedUser) {
+                                alert('❌ Gagal menjadikan KING. Kemungkinan RLS policy Supabase masih menolak UPDATE.\n\nSolusi: jalankan ulang `supabase-setup.sql` yang terbaru, lalu coba lagi.');
+                                return;
+                            }
+                            // Update localStorage if user is currently logged in
+                            const currentUsername = localStorage.getItem('username');
+                            if (currentUsername === username) {
+                                localStorage.setItem('userRole', 'king');
+                            }
+                            
+                            alert(`"${username}" sekarang adalah KING!`);
+                            loadMembers();
+                        });
+                    }
+                });
+            }
+        }
+
+        // Demote admin to member
+        function demoteToMember(username) {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat mengubah role.');
+                return;
+            }
+            if (username.toLowerCase() === 'admin') {
+                alert('Tidak dapat mengubah role user "admin" default!');
+                return;
+            }
+
+            if (confirm(`Apakah Anda yakin ingin mengubah "${username}" menjadi member?`)) {
+                getUsersFromFirebase(function(users) {
+                    const userIndex = users.findIndex(u => u.username === username);
+                    
+                    if (userIndex !== -1) {
+                        users[userIndex].role = 'member';
+                        saveUserToFirebase(users[userIndex], function(savedUser) {
+                            if (!savedUser) {
+                                alert('❌ Gagal mengubah role menjadi member. Kemungkinan RLS policy Supabase masih menolak UPDATE.\n\nSolusi: jalankan ulang `supabase-setup.sql` yang terbaru (ada policy: public can update users), lalu coba lagi.');
+                                return;
+                            }
+                            // Update localStorage if user is currently logged in
+                            const currentUsername = localStorage.getItem('username');
+                            if (currentUsername === username) {
+                                localStorage.setItem('userRole', 'member');
+                                // Redirect to checkout if demoted
+                                if (confirm('Role Anda telah diubah menjadi member. Anda akan diarahkan ke halaman checkout.')) {
+                                    window.location.href = 'checkout.html';
+                                }
+                            }
+                            
+                            alert(`"${username}" sekarang adalah member!`);
+                            loadMembers();
+                        });
+                    }
+                });
+            }
+        }
+
+        // Delete user
+        function deleteUser(username) {
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            if (role !== 'king') {
+                alert('Akses ditolak! Hanya KING yang dapat menghapus user.');
+                return;
+            }
+            // Only protect lowercase "admin", not "Admin" or other variations
+            if (username === 'admin') {
+                alert('Tidak dapat menghapus user "admin" default!');
+                return;
+            }
+
+            if (confirm(`Apakah Anda yakin ingin menghapus user "${username}"?\n\nPerhatian: Semua data user ini akan dihapus termasuk transaksi checkout mereka.`)) {
+                // Delete user from Firebase
+                deleteUserFromFirebase(username, function() {
+                    // Checkouts are automatically deleted by the API when user is deleted
+                    alert(`User "${username}" telah dihapus!`);
+                    loadMembers();
+                    loadTransactions();
+                });
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('username');
+                localStorage.removeItem('userRole');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Auto-delete specific users on first load
+        function autoDeleteUsers() {
+            const usersToDelete = ['Admin', 'Kent De Castillo', 'test'];
+            getUsersFromFirebase(function(users) {
+                getCheckoutsFromFirebase(function(checkouts) {
+                    let hasChanges = false;
+
+                    usersToDelete.forEach(username => {
+                        // Find user (case-insensitive check but exact match for deletion)
+                        const userIndex = users.findIndex(u => u.username === username);
+                        if (userIndex !== -1) {
+                            users.splice(userIndex, 1);
+                            hasChanges = true;
+                            
+                            // Also remove their checkouts
+                            checkouts = checkouts.filter(checkout => checkout.username !== username);
+                        }
+                    });
+
+                    if (hasChanges) {
+                        // Save users back to API
+                        users.forEach(user => {
+                            saveUserToFirebase(user);
+                        });
+                        // Note: Checkouts are managed by the API automatically
+                    }
+                });
+            });
+        }
+
+        // Set default date to today on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                const filterDateInput = document.getElementById('filterDate');
+                if (filterDateInput) {
+                    filterDateInput.value = todayStr;
+                }
+            }, 100);
+        });
+
+        // Initialize
+        setupRoleUi();
+        autoDeleteUsers();
+        loadTransactions();
+    </script>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Helper -->
+    <script src="supabase-helper.js"></script>
+    
+    <script>
+        // Initialize Supabase and setup listeners
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Admin: Initializing Supabase...');
+            console.log('Browser:', navigator.userAgent);
+            
+            setTimeout(function() {
+                const initialized = initSupabase();
+                if (!initialized) {
+                    console.error('Admin: Failed to initialize Supabase');
+                    alert('⚠️ Gagal memuat Supabase. Pastikan koneksi internet aktif dan coba refresh halaman (F5).');
+                    return;
+                }
+                
+                // Setup real-time listeners for admin page
+                setTimeout(function() {
+                    console.log('✅ Setting up Supabase real-time listeners...');
+                    
+                    // Listen to checkouts changes
+                    if (typeof listenToCheckouts === 'function') {
+                        listenToCheckouts(function(checkouts) {
+                            console.log('Checkouts updated from Supabase:', checkouts.length);
+                            filteredCheckouts = checkouts;
+                            updateStats(checkouts);
+                            displayTransactions(checkouts);
+                        });
+                    }
+                    
+                    // Listen to users changes
+                    if (typeof listenToUsers === 'function') {
+                        listenToUsers(function(users) {
+                            console.log('Users updated from Supabase:', users.length);
+                            loadMembers();
+                        });
+                    }
+                }, 500);
+            }, 100);
+        });
+        
+        // Fallback initialization
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(function() {
+                if (typeof initSupabase === 'function') {
+                    initSupabase();
+                }
+            }, 200);
+        }
+    </script>
+</body>
+</html>
