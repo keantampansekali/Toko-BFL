@@ -674,11 +674,11 @@
                 welcome.textContent = `Selamat datang, ${username}! Role: ${roleLabel}. Berikut adalah semua transaksi checkout dari member.`;
             }
 
-            // Hide member/stock tabs for PRINCE
+            // Hide stock tab for PRINCE (PRINCE can access members tab)
             const membersBtn = document.getElementById('membersTabBtn');
             const stockBtn = document.getElementById('stockTabBtn');
             if (!isKing) {
-                if (membersBtn) membersBtn.style.display = 'none';
+                // PRINCE can see members tab, but not stock tab
                 if (stockBtn) stockBtn.style.display = 'none';
             }
         }
@@ -946,8 +946,9 @@
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 loadTransactions();
             } else if (tabName === 'members') {
-                if (!isKing) {
-                    alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Member.');
+                // PRINCE and KING can access members tab
+                if (!isKing && !isPrince) {
+                    alert('Akses ditolak! Hanya KING dan PRINCE yang dapat mengakses Kelola Member.');
                     showTab('transactions');
                     return;
                 }
@@ -1184,8 +1185,11 @@
         function loadMembers() {
             if (!checkAdminAccess()) return;
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
-            if (role !== 'king') {
-                alert('Akses ditolak! Hanya KING yang dapat mengakses Kelola Member.');
+            const isKing = role === 'king';
+            const isPrince = role === 'prince';
+            // PRINCE and KING can access members tab
+            if (!isKing && !isPrince) {
+                alert('Akses ditolak! Hanya KING dan PRINCE yang dapat mengakses Kelola Member.');
                 return;
             }
 
