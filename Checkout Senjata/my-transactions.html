@@ -459,12 +459,27 @@
 
         function filterTransactions() {
             const filterDate = document.getElementById('filterDate').value;
-            const username = localStorage.getItem('username');
+            const username = (localStorage.getItem('username') || '').trim();
+            
+            if (!username) {
+                console.error('Username not found in localStorage');
+                return;
+            }
             
             // Get checkouts from Firebase
             getCheckoutsFromFirebase(function(allCheckouts) {
-                // Filter by username first
-                let userCheckouts = allCheckouts.filter(checkout => checkout.username === username);
+                if (!allCheckouts || !Array.isArray(allCheckouts)) {
+                    console.error('Invalid checkouts data in filterTransactions');
+                    return;
+                }
+                
+                // Filter by username first (case-insensitive and trim whitespace)
+                let userCheckouts = allCheckouts.filter(checkout => {
+                    const checkoutUsername = (checkout.username || '').trim();
+                    return checkoutUsername.toLowerCase() === username.toLowerCase();
+                });
+                
+                console.log('User checkouts after filter:', userCheckouts.length);
                 
                 if (!filterDate) {
                     // No date filter, show all user transactions
@@ -565,8 +580,19 @@
         function loadTransactions() {
             if (!checkLogin()) return;
 
-            const username = localStorage.getItem('username');
-            document.getElementById('welcomeMessage').textContent = `Selamat datang, ${username}! Berikut adalah riwayat transaksi checkout Anda.`;
+            const username = (localStorage.getItem('username') || '').trim();
+            console.log('Loading transactions for username:', username);
+            
+            if (!username) {
+                alert('Username tidak ditemukan. Silakan login ulang.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const welcomeMsg = document.getElementById('welcomeMessage');
+            if (welcomeMsg) {
+                welcomeMsg.textContent = `Selamat datang, ${username}! Berikut adalah riwayat transaksi checkout Anda.`;
+            }
 
             // Set default date to today
             const today = new Date();
@@ -579,10 +605,47 @@
                 filterDateInput.value = todayStr;
             }
 
+            // Check if getCheckoutsFromFirebase is available
+            if (typeof getCheckoutsFromFirebase !== 'function') {
+                console.error('getCheckoutsFromFirebase is not available!');
+                const transactionsList = document.getElementById('transactionsList');
+                if (transactionsList) {
+                    transactionsList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: getCheckoutsFromFirebase tidak tersedia. Pastikan supabase-helper.js ter-load.</div>';
+                }
+                return;
+            }
+
+            // Show loading state
+            const transactionsList = document.getElementById('transactionsList');
+            if (transactionsList) {
+                transactionsList.innerHTML = '<div style="color:#999;padding:20px;text-align:center;">Memuat transaksi...</div>';
+            }
+
             // Get checkouts from Firebase
             getCheckoutsFromFirebase(function(allCheckouts) {
-                // Filter by current user
-                filteredCheckouts = allCheckouts.filter(checkout => checkout.username === username);
+                console.log('All checkouts received:', allCheckouts.length);
+                console.log('All checkouts:', allCheckouts);
+                
+                if (!allCheckouts || !Array.isArray(allCheckouts)) {
+                    console.error('Invalid checkouts data:', allCheckouts);
+                    if (transactionsList) {
+                        transactionsList.innerHTML = '<div style="color:#ff006e;padding:20px;text-align:center;">❌ Error: Data transaksi tidak valid.</div>';
+                    }
+                    return;
+                }
+                
+                // Filter by current user (case-insensitive and trim whitespace)
+                filteredCheckouts = allCheckouts.filter(checkout => {
+                    const checkoutUsername = (checkout.username || '').trim();
+                    const match = checkoutUsername.toLowerCase() === username.toLowerCase();
+                    if (!match) {
+                        console.log(`Skipping checkout: username "${checkoutUsername}" !== "${username}"`);
+                    }
+                    return match;
+                });
+                
+                console.log('Filtered checkouts for user:', filteredCheckouts.length);
+                console.log('Filtered checkouts:', filteredCheckouts);
                 
                 // Auto-filter by today's date
                 if (filterDateInput && filterDateInput.value) {
