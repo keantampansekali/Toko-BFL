@@ -1044,13 +1044,44 @@
                                 <div class="member-role">Stok saat ini: <b>${currentStock}</b></div>
                             </div>
                             <div class="member-actions" style="gap:10px;align-items:center;">
-                                <input type="number" min="0" step="1" value="${currentStock}" id="stock-input-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}" class="filter-input" style="width:140px;" onkeypress="if(event.key==='Enter'){saveStock('${safeName}')}">
+                                <div style="display:flex;align-items:center;gap:5px;">
+                                    <button class="quantity-btn" onclick="decreaseStock('${safeName}')" style="width:35px;height:35px;border-radius:8px;border:2px solid #1a1a1a;background:#fff;color:#1a1a1a;font-size:18px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;">-</button>
+                                    <input type="number" min="0" step="1" value="${currentStock}" id="stock-input-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}" class="filter-input" style="width:100px;text-align:center;" onkeypress="if(event.key==='Enter'){saveStock('${safeName}')}">
+                                    <button class="quantity-btn" onclick="increaseStock('${safeName}')" style="width:35px;height:35px;border-radius:8px;border:2px solid #1a1a1a;background:#fff;color:#1a1a1a;font-size:18px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+                                </div>
                                 <button class="btn-action btn-promote" onclick="saveStock('${safeName}')" id="save-btn-${safeName.replace(/[^a-zA-Z0-9]/g, '_')}">Simpan</button>
                             </div>
                         </div>
                     `;
                 }).join('');
             });
+        }
+
+        // Increase stock by 1
+        function increaseStock(productName) {
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) return;
+            
+            const currentValue = Number(input.value) || 0;
+            input.value = currentValue + 1;
+            
+            // Auto-save after increase
+            saveStock(productName);
+        }
+
+        // Decrease stock by 1 (minimum 0)
+        function decreaseStock(productName) {
+            const safeId = productName.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`stock-input-${safeId}`);
+            if (!input) return;
+            
+            const currentValue = Number(input.value) || 0;
+            if (currentValue > 0) {
+                input.value = currentValue - 1;
+                // Auto-save after decrease
+                saveStock(productName);
+            }
         }
 
         function saveStock(productName) {
