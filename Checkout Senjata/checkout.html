@@ -750,14 +750,7 @@
 
                         // Supabase real-time will automatically notify other computers
                         // No need to manually refresh
-
-                        // Redirect admin to admin page
-                    const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
-                    if (userRole === 'king' || userRole === 'prince') {
-                            setTimeout(() => {
-                                window.location.href = 'admin.html';
-                            }, 500);
-                        }
+                        // Note: Admin users can manually navigate to admin.html if needed
                     } else {
                         alert('Gagal menyimpan checkout. Silakan coba lagi.');
                     }
