@@ -454,6 +454,24 @@
             return '$' + num.toLocaleString('en-US', { maximumFractionDigits: 0 });
         }
 
+        // Format date-time helper (for prepared_at)
+        function formatDateTime(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                return date.toLocaleString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return '';
+            }
+        }
+
         // Filter transactions by date
         let filteredCheckouts = [];
 
@@ -558,11 +576,24 @@
                     </div>
                 `).join('');
 
+                const prepared = !!checkout.prepared;
+                const preparedBadge = prepared
+                    ? '<span style="display:inline-block;margin-left:10px;padding:4px 10px;border-radius:999px;background:#1a1a1a;color:#fff;font-size:12px;font-weight:700;">SUDAH DIPERSIAPKAN</span>'
+                    : '<span style="display:inline-block;margin-left:10px;padding:4px 10px;border-radius:999px;background:#ff006e;color:#fff;font-size:12px;font-weight:700;">BELUM DIPERSIAPKAN</span>';
+
+                const preparedInfo = prepared
+                    ? `<div style="margin-top:6px;color:#4a4a4a;font-size:13px;font-weight:600;">Disiapkan oleh: ${checkout.prepared_by || '-'}${checkout.prepared_at ? ` • ${formatDateTime(checkout.prepared_at)}` : ''}</div>`
+                    : '';
+
                 return `
                     <div class="transaction-card">
                         <div class="transaction-header">
                             <div class="transaction-id">ID: #${checkout.id}</div>
                             <div class="transaction-date">${checkout.date}</div>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <div style="color:#1a1a1a;font-size:16px;font-weight:700;">Status Transaksi ${preparedBadge}</div>
+                            ${preparedInfo}
                         </div>
                         <div class="transaction-items">
                             ${itemsHtml}
