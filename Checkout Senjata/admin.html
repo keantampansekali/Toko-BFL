@@ -1034,7 +1034,11 @@
                     
                     if (userIndex !== -1) {
                         users[userIndex].role = 'admin';
-                        saveUserToFirebase(users[userIndex], function() {
+                        saveUserToFirebase(users[userIndex], function(savedUser) {
+                            if (!savedUser) {
+                                alert('❌ Gagal menjadikan admin. Kemungkinan RLS policy Supabase masih menolak UPDATE.\n\nSolusi: jalankan ulang `supabase-setup.sql` yang terbaru (ada policy: public can update users), lalu coba lagi.');
+                                return;
+                            }
                             // Update localStorage if user is currently logged in
                             const currentUsername = localStorage.getItem('username');
                             if (currentUsername === username) {
@@ -1062,7 +1066,11 @@
                     
                     if (userIndex !== -1) {
                         users[userIndex].role = 'member';
-                        saveUserToFirebase(users[userIndex], function() {
+                        saveUserToFirebase(users[userIndex], function(savedUser) {
+                            if (!savedUser) {
+                                alert('❌ Gagal mengubah role menjadi member. Kemungkinan RLS policy Supabase masih menolak UPDATE.\n\nSolusi: jalankan ulang `supabase-setup.sql` yang terbaru (ada policy: public can update users), lalu coba lagi.');
+                                return;
+                            }
                             // Update localStorage if user is currently logged in
                             const currentUsername = localStorage.getItem('username');
                             if (currentUsername === username) {
