@@ -501,14 +501,19 @@
                     filteredCheckouts = userCheckouts;
                 } else {
                     // Filter by selected date
-                    const selectedDate = new Date(filterDate);
+                    // filterDate format: "YYYY-MM-DD" (from HTML date input)
+                    const [year, month, day] = filterDate.split('-').map(Number);
+                    const selectedDate = new Date(year, month - 1, day);
                     selectedDate.setHours(0, 0, 0, 0);
                     
                     filteredCheckouts = userCheckouts.filter(checkout => {
-                        // Parse date from checkout.date (format: "DD/MM/YYYY, HH.mm.ss")
-                        const dateStr = checkout.date.split(',')[0]; // Get "DD/MM/YYYY"
-                        const [day, month, year] = dateStr.split('/');
-                        const checkoutDate = new Date(year, month - 1, day);
+                        // Parse date from checkout.date (format: "D/M/YYYY, HH.mm.ss" or "DD/MM/YYYY, HH.mm.ss")
+                        const dateStr = checkout.date.split(',')[0].trim(); // Get "D/M/YYYY" or "DD/MM/YYYY"
+                        const dateParts = dateStr.split('/');
+                        const checkoutDay = parseInt(dateParts[0], 10);
+                        const checkoutMonth = parseInt(dateParts[1], 10);
+                        const checkoutYear = parseInt(dateParts[2], 10);
+                        const checkoutDate = new Date(checkoutYear, checkoutMonth - 1, checkoutDay);
                         checkoutDate.setHours(0, 0, 0, 0);
                         
                         // Compare dates (ignore time)
