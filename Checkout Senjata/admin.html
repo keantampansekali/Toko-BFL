@@ -747,6 +747,43 @@
 
         // Filter transactions by date
         let filteredCheckouts = [];
+        
+        // Helper function to apply current filter
+        function applyCurrentFilter(allCheckouts) {
+            const filterDateInput = document.getElementById('filterDate');
+            if (!filterDateInput || !filterDateInput.value) {
+                return allCheckouts;
+            }
+            
+            const filterDate = filterDateInput.value;
+            // filterDate format: "YYYY-MM-DD" (from HTML date input)
+            const [year, month, day] = filterDate.split('-').map(Number);
+            const selectedDate = new Date(year, month - 1, day);
+            selectedDate.setHours(0, 0, 0, 0);
+            
+            return allCheckouts.filter(checkout => {
+                if (!checkout.date) return false;
+                
+                // Parse date from checkout.date (format: "D/M/YYYY, HH.mm.ss" or "DD/MM/YYYY, HH.mm.ss")
+                const dateStr = checkout.date.split(',')[0].trim();
+                const dateParts = dateStr.split('/');
+                
+                if (dateParts.length !== 3) return false;
+                
+                const checkoutDay = parseInt(dateParts[0], 10);
+                const checkoutMonth = parseInt(dateParts[1], 10);
+                const checkoutYear = parseInt(dateParts[2], 10);
+                
+                if (isNaN(checkoutDay) || isNaN(checkoutMonth) || isNaN(checkoutYear)) {
+                    return false;
+                }
+                
+                const checkoutDate = new Date(checkoutYear, checkoutMonth - 1, checkoutDay);
+                checkoutDate.setHours(0, 0, 0, 0);
+                
+                return checkoutDate.getTime() === selectedDate.getTime();
+            });
+        }
 
         function filterTransactions() {
             const filterDate = document.getElementById('filterDate').value;
@@ -757,20 +794,9 @@
                     // No filter, show all
                     filteredCheckouts = allCheckouts;
                 } else {
-                    // Filter by selected date
-                    const selectedDate = new Date(filterDate);
-                    selectedDate.setHours(0, 0, 0, 0);
-                    
-                    filteredCheckouts = allCheckouts.filter(checkout => {
-                        // Parse date from checkout.date (format: "DD/MM/YYYY, HH.mm.ss")
-                        const dateStr = checkout.date.split(',')[0]; // Get "DD/MM/YYYY"
-                        const [day, month, year] = dateStr.split('/');
-                        const checkoutDate = new Date(year, month - 1, day);
-                        checkoutDate.setHours(0, 0, 0, 0);
-                        
-                        // Compare dates (ignore time)
-                        return checkoutDate.getTime() === selectedDate.getTime();
-                    });
+                    // Use helper function to apply filter
+                    filteredCheckouts = applyCurrentFilter(allCheckouts);
+                    console.log(`Filtered ${filteredCheckouts.length} transactions from ${allCheckouts.length} total for date: ${filterDate}`);
                 }
                 
                 displayTransactions(filteredCheckouts);
@@ -912,12 +938,14 @@
             getCheckoutsFromFirebase(function(checkouts) {
                 console.log('Total checkouts found:', checkouts.length);
                 console.log('Checkouts data:', checkouts);
-                filteredCheckouts = checkouts;
                 
-                // Auto-filter by today's date
+                // Always apply filter if date input has value
                 if (filterDateInput && filterDateInput.value) {
+                    console.log('Applying filter with date:', filterDateInput.value);
                     filterTransactions();
                 } else {
+                    console.log('No filter date, showing all transactions');
+                    filteredCheckouts = checkouts;
                     updateStats(checkouts);
                     displayTransactions(checkouts);
                 }
@@ -1662,9 +1690,10 @@
                     if (typeof listenToCheckouts === 'function') {
                         listenToCheckouts(function(checkouts) {
                             console.log('Checkouts updated from Supabase:', checkouts.length);
-                            filteredCheckouts = checkouts;
-                            updateStats(checkouts);
-                            displayTransactions(checkouts);
+                            // Always apply current filter
+                            filteredCheckouts = applyCurrentFilter(checkouts);
+                            updateStats(filteredCheckouts);
+                            displayTransactions(filteredCheckouts);
                         });
                     }
                     
