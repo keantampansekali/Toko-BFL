@@ -597,9 +597,9 @@
                 <div class="item-price">${formatCurrency(item.price)}</div>
                 <div style="color:#4a4a4a;font-size:12px;font-weight:700;margin-bottom:8px;">Stok: <span id="stock-${item.name}">-</span></div>
                 <div class="item-quantity">
-                    <button class="quantity-btn" onclick="decreaseQuantity('${item.name}', ${item.price})">-</button>
-                    <input type="number" class="quantity-input" id="qty-${item.name}" value="0" min="0" onchange="updateQuantity('${item.name}', ${item.price}, this.value)">
-                    <button class="quantity-btn" onclick="increaseQuantity('${item.name}', ${item.price})">+</button>
+                    <button class="quantity-btn" id="btn-minus-${item.name}" onclick="decreaseQuantity('${item.name}', ${item.price})">-</button>
+                    <input type="number" class="quantity-input" id="qty-${item.name}" value="0" min="0" max="0" onchange="updateQuantity('${item.name}', ${item.price}, this.value)" onkeydown="return event.key !== 'Enter'">
+                    <button class="quantity-btn" id="btn-plus-${item.name}" onclick="increaseQuantity('${item.name}', ${item.price})">+</button>
                 </div>
             `;
             return card;
@@ -619,6 +619,20 @@
         function increaseQuantity(name, price) {
             const input = document.getElementById(`qty-${name}`);
             const currentValue = parseInt(input.value) || 0;
+            const available = typeof inventoryMap[name] === 'number' ? inventoryMap[name] : null;
+            
+            // Cek jika stok tidak tersedia atau 0
+            if (available === null || available === 0) {
+                alert(`Stok "${name}" tidak tersedia atau habis.`);
+                return;
+            }
+            
+            // Cek jika sudah mencapai maksimal stok
+            if (currentValue >= available) {
+                alert(`Stok "${name}" tidak cukup.\nMaksimal: ${available}`);
+                return;
+            }
+            
             input.value = currentValue + 1;
             updateQuantity(name, price, input.value);
         }
@@ -636,6 +650,16 @@
             const qty = parseInt(quantity) || 0;
             const available = typeof inventoryMap[name] === 'number' ? inventoryMap[name] : null;
 
+            // Cek jika stok tidak tersedia atau 0, dan user mencoba memasukkan quantity > 0
+            if ((available === null || available === 0) && qty > 0) {
+                alert(`Stok "${name}" tidak tersedia atau habis.`);
+                const input = document.getElementById(`qty-${name}`);
+                if (input) input.value = 0;
+                delete cart[name];
+                updateCart();
+                return;
+            }
+
             if (available !== null && qty > available) {
                 alert(`Stok "${name}" tidak cukup.\nMaksimal: ${available}`);
                 const input = document.getElementById(`qty-${name}`);
@@ -650,6 +674,57 @@
                 delete cart[name];
             }
             updateCart();
+        }
+
+        // Fungsi untuk enable/disable input berdasarkan stok
+        function updateItemAvailability(name) {
+            const input = document.getElementById(`qty-${name}`);
+            const plusBtn = document.getElementById(`btn-plus-${name}`);
+            const minusBtn = document.getElementById(`btn-minus-${name}`);
+            const available = typeof inventoryMap[name] === 'number' ? inventoryMap[name] : null;
+            
+            if (!input) return;
+            
+            // Set max attribute berdasarkan stok
+            if (available !== null && available > 0) {
+                input.setAttribute('max', available);
+            } else {
+                input.setAttribute('max', '0');
+            }
+            
+            // Jika stok 0 atau tidak tersedia, disable input dan tombol +
+            if (available === null || available === 0) {
+                input.disabled = true;
+                input.style.opacity = '0.5';
+                input.style.cursor = 'not-allowed';
+                if (plusBtn) {
+                    plusBtn.disabled = true;
+                    plusBtn.style.opacity = '0.5';
+                    plusBtn.style.cursor = 'not-allowed';
+                }
+                // Reset quantity ke 0 jika stok habis
+                if (parseInt(input.value) > 0) {
+                    input.value = 0;
+                    delete cart[name];
+                    updateCart();
+                }
+            } else {
+                input.disabled = false;
+                input.style.opacity = '1';
+                input.style.cursor = 'text';
+                if (plusBtn) {
+                    plusBtn.disabled = false;
+                    plusBtn.style.opacity = '1';
+                    plusBtn.style.cursor = 'pointer';
+                }
+            }
+            
+            // Tombol - selalu enabled
+            if (minusBtn) {
+                minusBtn.disabled = false;
+                minusBtn.style.opacity = '1';
+                minusBtn.style.cursor = 'pointer';
+            }
         }
 
         // Add to cart function removed - quantity input automatically updates cart
@@ -749,6 +824,9 @@
                             input.value = 0;
                         });
 
+                        // Reload inventory to update stock and availability
+                        loadInventory();
+
                         // Supabase real-time will automatically notify other computers
                         // No need to manually refresh
                         // Note: Admin users can manually navigate to admin.html if needed
@@ -801,7 +879,7 @@
                     inventoryMap[r.product_name] = Number(r.stock) || 0;
                 });
 
-                // Update stock labels
+                // Update stock labels and item availability
                 Object.keys(products).forEach(category => {
                     products[category].forEach(item => {
                         const el = document.getElementById(`stock-${item.name}`);
@@ -809,6 +887,8 @@
                             const stock = typeof inventoryMap[item.name] === 'number' ? inventoryMap[item.name] : 0;
                             el.textContent = stock;
                         }
+                        // Update availability (enable/disable input based on stock)
+                        updateItemAvailability(item.name);
                     });
                 });
             });
