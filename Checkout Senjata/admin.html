@@ -1015,6 +1015,57 @@
             }
         }
 
+        // Product catalog with images (same as checkout.html)
+        const PRODUCT_CATALOG_WITH_IMAGES = {
+            'PISTOL KACANG': 'Screenshot 2026-02-11 101632.png',
+            'PISTOL P.50': 'Screenshot 2026-02-05 151342.png',
+            'TEC-9': 'MachinePistol-GTAVee.png',
+            'PISTOL CERAMIC': 'Screenshot 2026-02-05 151349.png',
+            'MINI SMG': 'Screenshot 2026-02-05 151300.png',
+            'X17': 'Screenshot 2026-02-05 151328.png',
+            'MICRO SMG': 'Screenshot 2026-02-05 151322.png',
+            'SMG LARAS': 'Screenshot 2026-02-05 151316.png',
+            'NAVY REVOLVER': 'Screenshot 2026-02-05 151336.png',
+            'SHOTGUN': 'PumpShotgun-GTAVee.png',
+            'KVR': 'Screenshot 2026-02-05 151252.png',
+            'BLACK REVOLVER': 'Screenshot 2026-02-05 151558.png',
+            'ASSSAULT RIFLE': 'Screenshot 2026-02-05 151309.png',
+            'VIRTUS': 'Screenshot 2026-02-11 101400.png',
+            'AMMO .50': 'Screenshot 2026-02-05 144503.png',
+            'AMMO 9MM': 'Screenshot 2026-02-05 151212.png',
+            'AMMO .44': 'Screenshot 2026-02-05 151230.png',
+            'AMMO .45': 'Screenshot 2026-02-05 151218.png',
+            'AMMO RIFLE': 'Screenshot 2026-02-05 151236.png',
+            'AMMO SHOTGUN': 'Screenshot 2026-02-05 151223.png',
+            'VEST MERAH': 'Screenshot 2026-02-05 144553.png',
+            'VEST BIRU': 'Screenshot 2026-02-05 144546.png',
+            'WEED BAG': 'Screenshot 2026-02-05 144525.png',
+            'METH BAG': 'Screenshot 2026-02-05 144532.png',
+            'COCCAINE': 'Screenshot 2026-02-05 144539.png',
+            'GRIP': 'Screenshot 2026-02-05 151121.png',
+            'EXT. PISTOL CLIP': 'Screenshot 2026-02-05 151153.png',
+            'EXT. SMG CLIP': 'Screenshot 2026-02-05 151153.png',
+            'SUPPRESOR': 'Screenshot 2026-02-05 151139.png',
+            'TACTICAL SUPPRESOR': 'Screenshot 2026-02-05 151134.png',
+            'SMG DRUM': 'Screenshot 2026-02-05 151148.png',
+            'EXT. RIFLE CLIP': 'Screenshot 2026-02-05 151153.png',
+            'RIFLE DRUM': 'Screenshot 2026-02-05 151148.png'
+        };
+
+        // Get image path - works with Vercel and local
+        function getImagePath(imageName) {
+            if (!imageName) return null;
+            
+            // If already a full URL (http/https), return as is
+            if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
+                return imageName;
+            }
+            
+            // For Vercel/local: use absolute path
+            const baseUrl = window.location.origin;
+            return `${baseUrl}/${imageName}`;
+        }
+
         // Load and display stock list
         function loadStock() {
             if (!checkAdminAccess()) return;
@@ -1088,11 +1139,25 @@
                     const currentStock = stockMap[name] ?? 0;
                     // Escape quotes in product name for onclick
                     const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    
+                    // Get image for this product
+                    const imageName = PRODUCT_CATALOG_WITH_IMAGES[name];
+                    let imageHtml = '';
+                    if (imageName) {
+                        const imagePath = getImagePath(imageName);
+                        imageHtml = `<div style="width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid #000000;margin-right:15px;flex-shrink:0;background:linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);display:flex;align-items:center;justify-content:center;"><img src="${imagePath}" alt="${name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;text-align:center;font-size:10px;color:#fff;\\'>${name.substring(0,10)}</div>'"></div>`;
+                    } else {
+                        imageHtml = `<div style="width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid #000000;margin-right:15px;flex-shrink:0;background:linear-gradient(135deg, #ff006e 0%, #ff2d92 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;text-align:center;padding:5px;">${name.substring(0,10)}</div>`;
+                    }
+                    
                     return `
                         <div class="member-card" style="align-items:flex-start;">
-                            <div class="member-info">
-                                <div class="member-name">${name}</div>
-                                <div class="member-role">Stok saat ini: <b>${currentStock}</b></div>
+                            <div style="display:flex;align-items:flex-start;flex:1;">
+                                ${imageHtml}
+                                <div class="member-info" style="flex:1;">
+                                    <div class="member-name">${name}</div>
+                                    <div class="member-role">Stok saat ini: <b>${currentStock}</b></div>
+                                </div>
                             </div>
                             <div class="member-actions" style="gap:10px;align-items:center;">
                                 <div style="display:flex;align-items:center;gap:5px;">
