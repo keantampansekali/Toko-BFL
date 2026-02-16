@@ -923,14 +923,14 @@
         function loadTransactions() {
             if (!checkAdminAccess()) return;
 
-            // Set default date to today
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
+            // Set default date to today only if filter is empty (preserve existing filter)
             const filterDateInput = document.getElementById('filterDate');
-            if (filterDateInput) {
+            if (filterDateInput && !filterDateInput.value) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
                 filterDateInput.value = todayStr;
             }
 
@@ -1182,8 +1182,7 @@
             const currentValue = Number(input.value) || 0;
             input.value = currentValue + 1;
             
-            // Auto-save after increase
-            saveStock(productName);
+            // Don't auto-save, user must click "Simpan" button
         }
 
         // Decrease stock by 1 (minimum 0)
@@ -1195,8 +1194,7 @@
             const currentValue = Number(input.value) || 0;
             if (currentValue > 0) {
                 input.value = currentValue - 1;
-                // Auto-save after decrease
-                saveStock(productName);
+                // Don't auto-save, user must click "Simpan" button
             }
         }
 
